@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-export default function CvePage() {
+export default function CvePage({ params }: { params: { id: string } }) {
+	const cveId = params.id;
 	return (
 		<div className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
 			<style
@@ -20,7 +21,7 @@ export default function CvePage() {
 				<div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
 					<div className="xl:col-span-8">
 						<h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight mb-4">
-							CVE-2024-1234: Remote Code Execution in WebServer X
+							{cveId}: Remote Code Execution in WebServer X
 						</h1>
 						<p className="text-lg text-slate-600 dark:text-slate-400 mb-8 font-light italic leading-relaxed">
 							A critical flaw in the URI parsing engine allows unauthenticated remote attackers to
@@ -145,7 +146,7 @@ export default function CvePage() {
 											backgroundSize: "20px 20px",
 										}}
 									></div>
-									<div className="flex flex-col items-center gap-4 z-[1]">
+									<div className="flex flex-col items-center gap-4 z-1">
 										<span className="material-symbols-outlined text-6xl text-primary/40">
 											account_tree
 										</span>
@@ -206,7 +207,7 @@ export default function CvePage() {
 										href="#"
 									>
 										<span className="material-symbols-outlined text-sm">open_in_new</span>
-										NIST NVD CVE-2024-1234 Entry
+										NIST NVD {cveId} Entry
 									</a>
 								</li>
 								<li>
@@ -230,7 +231,7 @@ export default function CvePage() {
 							</h2>
 							<div className="space-y-4">
 								<div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex gap-4 shadow-sm">
-									<div className="flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 px-3 rounded-lg min-w-[50px]">
+									<div className="flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 px-3 rounded-lg min-w-12.5">
 										<button className="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">
 											expand_less
 										</button>
@@ -265,7 +266,7 @@ export default function CvePage() {
 									</div>
 								</div>
 								<div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex gap-4 shadow-sm">
-									<div className="flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 px-3 rounded-lg min-w-[50px]">
+									<div className="flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 px-3 rounded-lg min-w-12.5">
 										<button className="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">
 											expand_less
 										</button>
@@ -315,7 +316,7 @@ export default function CvePage() {
 								<h3 className="text-sm font-semibold uppercase tracking-widest opacity-80 mb-1">
 									CVE IDENTIFIER
 								</h3>
-								<p className="text-3xl font-black">CVE-2024-1234</p>
+								<p className="text-3xl font-black">{cveId}</p>
 							</div>
 							<div className="p-8 space-y-6">
 								<div className="flex flex-col items-center pb-6 border-b border-slate-100 dark:border-slate-800">
@@ -424,8 +425,8 @@ export default function CvePage() {
 							</div>
 						</div>
 						<div className="mt-8 p-6 bg-slate-900 rounded-xl text-white relative overflow-hidden group shadow-lg">
-							<div className="absolute inset-0 bg-gradient-to-br from-primary to-transparent opacity-20 pointer-events-none"></div>
-							<div className="relative z-[1]">
+							<div className="absolute inset-0 bg-linear-to-br from-primary to-transparent opacity-20 pointer-events-none"></div>
+							<div className="relative z-1">
 								<h4 className="font-bold text-lg mb-2">Nexus Threat Intelligence</h4>
 								<p className="text-sm text-slate-400 mb-4">
 									Get real-time monitoring of this CVE across your infrastructure.
