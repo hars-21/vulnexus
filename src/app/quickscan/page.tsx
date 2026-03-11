@@ -1,153 +1,264 @@
-"use client";
-
-import { useState } from "react";
-import { Zap, Terminal, Send } from "lucide-react";
-
-type ServiceInfo = { port: number; service: string; version: string | null; protocol?: string };
-type AttackNode = { id: string; label: string; type: string; cve_id: string | null; cvss_score: number | null; children: AttackNode[] };
-type AttackPathResponse = { summary: string; attack_graph: AttackNode; cves_found: string[]; recommendations: string[] };
-type QuickScanResponse = { parsed_services: ServiceInfo[]; attack_path: AttackPathResponse };
-
-const nodeColors: Record<string, string> = {
-  port: "border-[#0646ac] bg-[#0646ac]/5 text-[#0646ac]",
-  vulnerability: "border-red-300 bg-red-50 text-red-700",
-  action: "border-orange-300 bg-orange-50 text-orange-700",
-  impact: "border-slate-300 bg-slate-50 text-slate-700",
-};
-
-function NodeTree({ node, depth = 0 }: { node: AttackNode; depth?: number }) {
-  return (
-    <div style={{ marginLeft: depth * 24 }} className="mt-2">
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium ${nodeColors[node.type] || "border-slate-200 bg-white"}`}>
-        {node.cve_id && <span className="font-bold">{node.cve_id}</span>}
-        {node.label}
-        {node.cvss_score && <span className="font-bold text-red-600">{node.cvss_score}</span>}
-      </div>
-      {node.children?.map((child) => (
-        <NodeTree key={child.id} node={child} depth={depth + 1} />
-      ))}
-    </div>
-  );
-}
-
-export default function QuickScanPage() {
-  const [scanOutput, setScanOutput] = useState("");
-  const [targetInfo, setTargetInfo] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<QuickScanResponse | null>(null);
-
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-  async function handleScan(e: React.FormEvent) {
-    e.preventDefault();
-    if (!scanOutput.trim()) return;
-    setLoading(true);
-    setResult(null);
-    try {
-      const r = await fetch(`${API}/api/attack-path/quickscan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scan_output: scanOutput, target_info: targetInfo || undefined }),
-      });
-      const data = await r.json();
-      setResult(data);
-    } catch {
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-          <Zap size={22} className="text-yellow-500" /> Quick Scan
-        </h1>
-        <p className="text-sm text-slate-500">Paste raw nmap output — we parse services and generate a full attack path</p>
-      </div>
-
-      <form onSubmit={handleScan} className="mb-6 space-y-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-            <Terminal size={14} className="text-slate-400" />
-            <span className="text-xs font-bold text-slate-500">Nmap Output</span>
-          </div>
-          <textarea
-            value={scanOutput}
-            onChange={(e) => setScanOutput(e.target.value)}
-            rows={8}
-            placeholder={`22/tcp   open  ssh     OpenSSH 7.2p2 Ubuntu\n80/tcp   open  http    nginx 1.18.0\n3306/tcp open  mysql   MySQL 5.7.36`}
-            className="w-full bg-transparent font-mono text-xs p-4 resize-none focus:outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400"
-          />
-        </div>
-
-        <input
-          value={targetInfo}
-          onChange={(e) => setTargetInfo(e.target.value)}
-          placeholder="Additional context (optional): OS, network segment, purpose..."
-          className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0646ac]/20"
-        />
-
-        <button
-          type="submit"
-          disabled={loading || !scanOutput.trim()}
-          className="flex items-center gap-2 bg-[#0646ac] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#0646ac]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : <Send size={14} />}
-          Generate Attack Path
-        </button>
-      </form>
-
-      {result && (
-        <div className="space-y-5">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-            <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Parsed Services</h2>
-            <div className="flex flex-wrap gap-2">
-              {result.parsed_services.map((svc, i) => (
-                <span key={i} className="px-3 py-1 bg-[#0646ac]/10 text-[#0646ac] rounded text-xs font-bold">
-                  {svc.port}/{svc.protocol || "tcp"} {svc.service} {svc.version || ""}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-            <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-1">Summary</h2>
-            <p className="text-sm text-slate-700 dark:text-slate-300">{result.attack_path.summary}</p>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 overflow-x-auto">
-            <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">Attack Graph</h2>
-            <NodeTree node={result.attack_path.attack_graph} />
-          </div>
-
-          {result.attack_path.cves_found.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-              <h2 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">CVEs Found</h2>
-              <div className="flex flex-wrap gap-2">
-                {result.attack_path.cves_found.map((cveId) => (
-                  <a key={cveId} href={`/cves/${cveId}`}
-                    className="px-2 py-1 bg-red-50 text-red-700 rounded text-xs font-bold hover:bg-red-100 transition-colors">
-                    {cveId}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="bg-[#0646ac]/5 border border-[#0646ac]/20 rounded-xl p-5">
-            <h3 className="font-bold text-sm text-[#0646ac] mb-2">Recommendations</h3>
-            <ul className="space-y-1">
-              {result.attack_path.recommendations.map((r, i) => (
-                <li key={i} className="text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
-                  <span className="text-[#0646ac] font-bold mt-0.5">{i + 1}.</span> {r}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+export default function QuickscanPage() {
+	return (
+		<div className="text-slate-800 bg-slate-50 flex flex-col overflow-hidden">
+			<style
+				dangerouslySetInnerHTML={{
+					__html: `
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background-color: #cbd5e1;
+                    border-radius: 20px;
+                }
+            `,
+				}}
+			/>
+			<div className="flex flex-1 overflow-hidden">
+				<main className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 p-8">
+					<div className="max-w-5xl mx-auto space-y-8">
+						<div>
+							<h1 className="text-3xl font-bold text-slate-900 mb-2">Vulnerability Predictor</h1>
+							<p className="text-slate-500 text-lg">
+								AI-driven static and dynamic analysis to predict potential security flaws in your
+								source code.
+							</p>
+						</div>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+								<div className="flex items-center gap-3 mb-6">
+									<div className="w-8 h-8 bg-blue-50 text-blue-600 rounded flex items-center justify-center">
+										<span className="material-symbols-outlined text-sm">upload_file</span>
+									</div>
+									<h2 className="text-lg font-bold text-slate-800">Upload File/Folder</h2>
+								</div>
+								<div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 flex flex-col items-center justify-center py-12 text-center transition-colors hover:bg-slate-100 hover:border-slate-300 cursor-pointer">
+									<span className="material-symbols-outlined text-3xl text-slate-400 mb-3">
+										cloud_upload
+									</span>
+									<p className="text-slate-600 text-sm">Drag &amp; drop source code or</p>
+									<p className="text-blue-600 font-semibold text-sm">Browse files</p>
+								</div>
+							</div>
+							<div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+								<div className="flex items-center gap-3 mb-6">
+									<div className="w-8 h-8 bg-blue-50 text-blue-600 rounded flex items-center justify-center">
+										<span className="material-symbols-outlined text-sm">terminal</span>
+									</div>
+									<h2 className="text-lg font-bold text-slate-800">
+										Import from GitHub Repository
+									</h2>
+								</div>
+								<div className="space-y-4">
+									<div>
+										<label className="block text-xs font-semibold text-slate-500 uppercase mb-1">
+											Repository URL
+										</label>
+										<input
+											className="w-full bg-slate-50 border border-slate-200 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+											placeholder="https://github.com/username/repo"
+											type="text"
+										/>
+									</div>
+									<div className="flex gap-3">
+										<div className="flex-1">
+											<input
+												className="w-full bg-slate-50 border border-slate-200 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+												placeholder="Branch (e.g. main)"
+												type="text"
+											/>
+										</div>
+										<button className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+											Connect
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div className="flex justify-center pt-2">
+							<button className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-3 rounded-lg font-medium text-lg flex items-center gap-2 shadow-md transition-transform active:scale-95">
+								<span className="material-symbols-outlined">my_location</span>
+								Scan for Vulnerabilities
+							</button>
+						</div>
+						<hr className="border-slate-200 my-8" />
+						<div>
+							<div className="flex items-center justify-between mb-6">
+								<h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+									<div className="w-6 h-6 bg-blue-800 rounded text-white flex items-center justify-center">
+										<span className="material-symbols-outlined text-xs">bar_chart</span>
+									</div>
+									Prediction Results:{" "}
+									<span className="text-slate-400 font-normal">auth-service-main</span>
+								</h2>
+								<span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+									Scan Complete
+								</span>
+							</div>
+							<div className="space-y-4">
+								<div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+									<div className="flex justify-between items-start mb-4">
+										<div>
+											<div className="flex items-center gap-3 mb-1">
+												<h3 className="text-xl font-bold text-slate-900">SQL Injection</h3>
+												<span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
+													Critical
+												</span>
+											</div>
+											<div className="flex items-center text-slate-500 text-sm gap-2 font-mono bg-slate-50 px-2 py-1 rounded inline-block">
+												<span className="material-symbols-outlined text-sm">code</span>{" "}
+												src/api/auth.js:142
+											</div>
+										</div>
+										<div className="text-right">
+											<p className="text-xs font-semibold text-slate-500 uppercase mb-1">
+												Confidence Score
+											</p>
+											<div className="flex items-center gap-3">
+												<div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+													<div className="h-full bg-red-500" style={{ width: "94%" }}></div>
+												</div>
+												<span className="font-bold text-slate-800">94%</span>
+											</div>
+										</div>
+									</div>
+									<div className="bg-slate-50 border-l-4 border-slate-300 p-4 rounded-r-md mb-4">
+										<p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+											Context &amp; Reasoning
+										</p>
+										<p className="text-slate-700 italic text-sm">
+											&ldquo;User input from &apos;req.body.username&apos; is directly concatenated
+											into the SQL query without proper sanitization or parameterized inputs.
+											Patterns match known unsanitized sink vulnerabilities.&rdquo;
+										</p>
+									</div>
+									<div className="flex items-center text-sm">
+										<span className="text-slate-400 font-semibold mr-2 uppercase text-xs">
+											Related:
+										</span>
+										<div className="flex gap-3">
+											<a className="text-blue-600 hover:underline" href="#">
+												CVE-2023-4451
+											</a>
+											<a className="text-blue-600 hover:underline" href="#">
+												CWE-89
+											</a>
+											<a className="text-blue-600 hover:underline" href="#">
+												OWASP-A03:2021
+											</a>
+										</div>
+									</div>
+								</div>
+								<div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+									<div className="flex justify-between items-start mb-4">
+										<div>
+											<div className="flex items-center gap-3 mb-1">
+												<h3 className="text-xl font-bold text-slate-900">Insecure Dependency</h3>
+												<span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
+													Medium
+												</span>
+											</div>
+											<div className="flex items-center text-slate-500 text-sm gap-2 font-mono bg-slate-50 px-2 py-1 rounded inline-block">
+												<span className="material-symbols-outlined text-sm">inventory_2</span>{" "}
+												package.json:28
+											</div>
+										</div>
+										<div className="text-right">
+											<p className="text-xs font-semibold text-slate-500 uppercase mb-1">
+												Confidence Score
+											</p>
+											<div className="flex items-center gap-3">
+												<div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+													<div className="h-full bg-amber-500" style={{ width: "78%" }}></div>
+												</div>
+												<span className="font-bold text-slate-800">78%</span>
+											</div>
+										</div>
+									</div>
+									<div className="bg-slate-50 border-l-4 border-slate-300 p-4 rounded-r-md mb-4">
+										<p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+											Context &amp; Reasoning
+										</p>
+										<p className="text-slate-700 italic text-sm">
+											&ldquo;Package &apos;lodash&apos; version 4.17.20 contains multiple known
+											vulnerabilities including Prototype Pollution. Update to 4.17.21 or
+											higher.&rdquo;
+										</p>
+									</div>
+									<div className="flex items-center text-sm">
+										<span className="text-slate-400 font-semibold mr-2 uppercase text-xs">
+											Related:
+										</span>
+										<div className="flex gap-3">
+											<a className="text-blue-600 hover:underline" href="#">
+												CVE-2020-8203
+											</a>
+											<a className="text-blue-600 hover:underline" href="#">
+												CVE-2021-23337
+											</a>
+										</div>
+									</div>
+								</div>
+								<div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+									<div className="flex justify-between items-start mb-4">
+										<div>
+											<div className="flex items-center gap-3 mb-1">
+												<h3 className="text-xl font-bold text-slate-900">
+													Potential Buffer Overflow
+												</h3>
+												<span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
+													Low/Info
+												</span>
+											</div>
+											<div className="flex items-center text-slate-500 text-sm gap-2 font-mono bg-slate-50 px-2 py-1 rounded inline-block">
+												<span className="material-symbols-outlined text-sm">code</span>{" "}
+												native/utils.c:84
+											</div>
+										</div>
+										<div className="text-right">
+											<p className="text-xs font-semibold text-slate-500 uppercase mb-1">
+												Confidence Score
+											</p>
+											<div className="flex items-center gap-3">
+												<div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+													<div className="h-full bg-blue-500" style={{ width: "42%" }}></div>
+												</div>
+												<span className="font-bold text-slate-800">42%</span>
+											</div>
+										</div>
+									</div>
+									<div className="bg-slate-50 border-l-4 border-slate-300 p-4 rounded-r-md mb-4">
+										<p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+											Context &amp; Reasoning
+										</p>
+										<p className="text-slate-700 italic text-sm">
+											&ldquo;Use of &apos;strcpy&apos; detected. While the destination buffer size
+											seems managed, &apos;strncpy&apos; or &apos;strlcpy&apos; is recommended for
+											safer memory handling.&rdquo;
+										</p>
+									</div>
+									<div className="flex items-center text-sm">
+										<span className="text-slate-400 font-semibold mr-2 uppercase text-xs">
+											Related:
+										</span>
+										<div className="flex gap-3">
+											<a className="text-blue-600 hover:underline" href="#">
+												Best Practices
+											</a>
+											<a className="text-blue-600 hover:underline" href="#">
+												CWE-120
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+			</div>
+		</div>
+	);
 }
