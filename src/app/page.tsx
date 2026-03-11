@@ -100,132 +100,145 @@ const severityColors: Record<string, string> = {
 
 export default function HomePage() {
 	return (
-		<div className="max-w-5xl">
-			<div className="bg-gradient-to-br from-[#0646ac] to-[#0646ac]/80 rounded-xl p-8 text-white relative overflow-hidden shadow-xl shadow-[#0646ac]/10 mb-8">
-				<div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-					<div className="max-w-xl">
-						<h1 className="text-3xl font-black mb-3">Welcome to VULNEXUS</h1>
-						<p className="text-blue-100 text-base leading-relaxed mb-6">
-							The AI-powered vulnerability research platform. Search CVEs, generate attack paths,
-							analyze code, and get expert guidance — all in one place.
-						</p>
-						<div className="flex gap-3">
-							<Link
-								href="/search"
-								className="bg-white text-[#0646ac] px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors"
-							>
-								Start Hunting
-							</Link>
-							<Link
-								href="/assistant"
-								className="bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-white/10 transition-colors"
-							>
-								AI Assistant
-							</Link>
+		<div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900/50">
+			<section className="p-6 md:p-8">
+				<div className="max-w-5xl mx-auto">
+					<div className="bg-gradient-to-br from-[#0646ac] to-[#0646ac]/80 rounded-xl p-8 text-white relative overflow-hidden shadow-xl shadow-[#0646ac]/10 mb-8">
+						<div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+							<div className="max-w-xl">
+								<h1 className="text-3xl font-black mb-3">Welcome to VULNEXUS</h1>
+								<p className="text-blue-100 text-base leading-relaxed mb-6">
+									The AI-powered vulnerability research platform. Search CVEs, generate attack
+									paths, analyze code, and get expert guidance — all in one place.
+								</p>
+								<div className="flex gap-3">
+									<Link
+										href="/search"
+										className="bg-white text-[#0646ac] px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors"
+									>
+										Start Hunting
+									</Link>
+									<Link
+										href="/assistant"
+										className="bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-white/10 transition-colors"
+									>
+										AI Assistant
+									</Link>
+								</div>
+							</div>
+						</div>
+						<div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
+							<svg className="h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+								<defs>
+									<pattern height="10" id="grid" patternUnits="userSpaceOnUse" width="10">
+										<path
+											d="M 10 0 L 0 0 0 10"
+											fill="none"
+											stroke="currentColor"
+											strokeWidth="0.5"
+										/>
+									</pattern>
+								</defs>
+								<rect fill="url(#grid)" height="100" width="100" />
+							</svg>
 						</div>
 					</div>
-				</div>
-				<div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
-					<svg className="h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-						<defs>
-							<pattern height="10" id="grid" patternUnits="userSpaceOnUse" width="10">
-								<path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
-							</pattern>
-						</defs>
-						<rect fill="url(#grid)" height="100" width="100" />
-					</svg>
-				</div>
-			</div>
 
-			<div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden mb-8">
-				{stats.map((s) => (
-					<div key={s.label} className="bg-white dark:bg-slate-900 px-6 py-5 text-center">
-						<p className="text-xl font-extrabold text-slate-900 dark:text-white mb-1">{s.value}</p>
-						<p className="text-[11px] text-slate-400 uppercase tracking-widest font-bold">
-							{s.label}
-						</p>
-					</div>
-				))}
-			</div>
-
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-				{features.map((f) => (
-					<Link
-						key={f.href}
-						href={f.href}
-						className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md hover:-translate-y-0.5 transition-all group"
-					>
-						<div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${f.color}`}>
-							<f.icon size={18} />
-						</div>
-						<p className="font-semibold text-sm text-slate-900 dark:text-white mb-1 group-hover:text-[#0646ac] transition-colors">
-							{f.label}
-						</p>
-						<p className="text-xs text-slate-500 leading-relaxed">{f.desc}</p>
-					</Link>
-				))}
-			</div>
-
-			<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-				<div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-					<h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm">
-						Recently Disclosed CVEs
-					</h3>
-					<Link
-						href="/threat-feed"
-						className="text-xs font-bold text-[#0646ac] hover:underline flex items-center gap-1"
-					>
-						View All <ArrowRight size={12} />
-					</Link>
-				</div>
-				<table className="w-full text-left text-sm">
-					<thead className="bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-500 uppercase tracking-wider">
-						<tr>
-							<th className="px-6 py-3">CVE ID</th>
-							<th className="px-6 py-3">Severity</th>
-							<th className="px-6 py-3">Software</th>
-							<th className="px-6 py-3">Published</th>
-							<th className="px-6 py-3" />
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-						{recentCves.map((cve) => (
-							<tr
-								key={cve.id}
-								className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
-							>
-								<td className="px-6 py-3">
-									<Link
-										href={`/cves/${cve.id}`}
-										className="font-bold text-[#0646ac] hover:underline"
-									>
-										{cve.id}
-									</Link>
-								</td>
-								<td className="px-6 py-3">
-									<span
-										className={`px-2 py-0.5 rounded text-[10px] font-black ${severityColors[cve.severity] || ""}`}
-									>
-										{cve.score} {cve.severity}
-									</span>
-								</td>
-								<td className="px-6 py-3 font-medium text-slate-700 dark:text-slate-300">
-									{cve.software}
-								</td>
-								<td className="px-6 py-3 text-slate-500 text-xs">{cve.date}</td>
-								<td className="px-6 py-3">
-									<Link
-										href={`/cves/${cve.id}`}
-										className="flex items-center gap-1 text-xs text-slate-400 hover:text-[#0646ac] opacity-0 group-hover:opacity-100 transition-all"
-									>
-										View <ArrowRight size={12} />
-									</Link>
-								</td>
-							</tr>
+					<div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden mb-8">
+						{stats.map((s) => (
+							<div key={s.label} className="bg-white dark:bg-slate-900 px-6 py-5 text-center">
+								<p className="text-xl font-extrabold text-slate-900 dark:text-white mb-1">
+									{s.value}
+								</p>
+								<p className="text-[11px] text-slate-400 uppercase tracking-widest font-bold">
+									{s.label}
+								</p>
+							</div>
 						))}
-					</tbody>
-				</table>
-			</div>
+					</div>
+
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+						{features.map((f) => (
+							<Link
+								key={f.href}
+								href={f.href}
+								className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md hover:-translate-y-0.5 transition-all group"
+							>
+								<div
+									className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${f.color}`}
+								>
+									<f.icon size={18} />
+								</div>
+								<p className="font-semibold text-sm text-slate-900 dark:text-white mb-1 group-hover:text-[#0646ac] transition-colors">
+									{f.label}
+								</p>
+								<p className="text-xs text-slate-500 leading-relaxed">{f.desc}</p>
+							</Link>
+						))}
+					</div>
+
+					<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+						<div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+							<h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm">
+								Recently Disclosed CVEs
+							</h3>
+							<Link
+								href="/threat-feed"
+								className="text-xs font-bold text-[#0646ac] hover:underline flex items-center gap-1"
+							>
+								View All <ArrowRight size={12} />
+							</Link>
+						</div>
+						<table className="w-full text-left text-sm">
+							<thead className="bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-500 uppercase tracking-wider">
+								<tr>
+									<th className="px-6 py-3">CVE ID</th>
+									<th className="px-6 py-3">Severity</th>
+									<th className="px-6 py-3">Software</th>
+									<th className="px-6 py-3">Published</th>
+									<th className="px-6 py-3" />
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+								{recentCves.map((cve) => (
+									<tr
+										key={cve.id}
+										className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+									>
+										<td className="px-6 py-3">
+											<Link
+												href={`/cves/${cve.id}`}
+												className="font-bold text-[#0646ac] hover:underline"
+											>
+												{cve.id}
+											</Link>
+										</td>
+										<td className="px-6 py-3">
+											<span
+												className={`px-2 py-0.5 rounded text-[10px] font-black ${severityColors[cve.severity] || ""}`}
+											>
+												{cve.score} {cve.severity}
+											</span>
+										</td>
+										<td className="px-6 py-3 font-medium text-slate-700 dark:text-slate-300">
+											{cve.software}
+										</td>
+										<td className="px-6 py-3 text-slate-500 text-xs">{cve.date}</td>
+										<td className="px-6 py-3">
+											<Link
+												href={`/cves/${cve.id}`}
+												className="flex items-center gap-1 text-xs text-slate-400 hover:text-[#0646ac] opacity-0 group-hover:opacity-100 transition-all"
+											>
+												View <ArrowRight size={12} />
+											</Link>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
 		</div>
 	);
 }

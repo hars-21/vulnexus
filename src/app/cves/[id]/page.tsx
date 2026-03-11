@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function CvePage() {
 	return (
-		<div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+		<div className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
 			<style
 				dangerouslySetInnerHTML={{
 					__html: `

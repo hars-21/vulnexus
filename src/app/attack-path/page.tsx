@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function AttackPathPage() {
 	return (
-		<div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+		<div className="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
 			<style
 				dangerouslySetInnerHTML={{
 					__html: `
