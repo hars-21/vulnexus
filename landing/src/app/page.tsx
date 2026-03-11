@@ -26,7 +26,6 @@ export default function Home() {
               🛡
             </div>
           </div>
-          {/* Abstract Background Pattern */}
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
             <svg className="h-full w-full text-white" preserveAspectRatio="none" viewBox="0 0 100 100">
               <defs>
@@ -36,6 +35,24 @@ export default function Home() {
               </defs>
               <rect fill="url(#grid)" height="100" width="100"></rect>
             </svg>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Banner */}
+      <section className="px-6 md:px-8 pb-6">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-black rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-white">{cves.length.toLocaleString()}</p>
+            <p className="text-xs text-gray-400 uppercase font-bold">Total CVEs</p>
+          </div>
+          <div className="bg-black rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-white">{exploits.length}</p>
+            <p className="text-xs text-gray-400 uppercase font-bold">Exploits</p>
+          </div>
+          <div className="bg-black rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-white">{(cves.filter(c => c.severity === 'CRITICAL')).length}</p>
+            <p className="text-xs text-gray-400 uppercase font-bold">Critical</p>
           </div>
         </div>
       </section>
@@ -104,17 +121,17 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {cves.slice(0, 5).map((cve) => (
+              {cves.slice(0, 10).map((cve) => (
                 <tr key={cve.id} className="hover:bg-gray-50 transition-colors group">
                   <td className="px-6 py-4 font-bold text-black cursor-pointer hover:underline">
                     <Link href={`/cve/${cve.id.replace('CVE-', '')}`}>{cve.id}</Link>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                      cve.severity === 'CRITICAL' ? 'bg-black text-white' :
-                      cve.severity === 'HIGH' ? 'bg-gray-600 text-white' :
-                      cve.severity === 'MEDIUM' ? 'bg-gray-400 text-white' :
-                      'bg-gray-300 text-gray-700'
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black text-white ${
+                      cve.severity === 'CRITICAL' ? 'bg-black' :
+                      cve.severity === 'HIGH' ? 'bg-gray-600' :
+                      cve.severity === 'MEDIUM' ? 'bg-gray-400' :
+                      'bg-gray-300'
                     }`}>
                       {cve.score} {cve.severity}
                     </span>
@@ -132,7 +149,7 @@ export default function Home() {
           </table>
           <div className="p-4 bg-gray-50 border-t border-gray-200 text-center">
             <Link href="/cve" className="text-gray-600 text-xs font-black uppercase tracking-widest hover:text-black">
-              View Full Database
+              View Full Database ({cves.length.toLocaleString()} CVEs)
             </Link>
           </div>
         </div>
@@ -147,17 +164,18 @@ export default function Home() {
             Trending Exploits
           </h3>
           <div className="space-y-4">
-            {exploits.slice(0, 3).map((exploit) => (
+            {exploits.slice(0, 5).map((exploit) => (
               <div key={exploit.id} className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all cursor-pointer bg-white">
                 <div className="bg-gray-100 p-2 rounded text-gray-600">
                   <span className="text-lg">{'</>'}</span>
                 </div>
-                <div>
+                <div className="flex-1">
                   <h5 className="font-bold text-sm mb-1">{exploit.title}</h5>
                   <p className="text-xs text-gray-400">{exploit.description}</p>
-                  <div className="mt-2 flex items-center gap-3 text-[10px] font-bold text-gray-400">
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 mt-2">
                     <span className="flex items-center gap-0.5">★ {exploit.votes}</span>
                     <span className="flex items-center gap-0.5">⑂ {exploit.forks}</span>
+                    <span className="ml-auto">{exploit.verificationLevel}</span>
                   </div>
                 </div>
               </div>

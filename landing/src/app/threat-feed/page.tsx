@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { cves } from '@/data/mockData';
+import { cves, threatFeed } from '@/data/mockData';
 
 export default function ThreatFeedPage() {
-  const criticalCves = cves.filter(c => c.severity === 'CRITICAL');
+  const criticalCves = cves.filter(c => c.severity === 'CRITICAL').slice(0, 12);
+  const recentThreats = threatFeed.slice(0, 20);
 
   return (
     <div className="p-6 md:p-8">
@@ -19,28 +20,28 @@ export default function ThreatFeedPage() {
           <span className="animate-pulse w-3 h-3 bg-white rounded-full" />
           <span className="text-white font-bold text-sm">LIVE</span>
           <span className="text-gray-300 text-sm">
-            4 new critical vulnerabilities detected in the last 24 hours
+            {criticalCves.length} new critical vulnerabilities detected in the last 24 hours
           </span>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-500 uppercase font-bold">Total CVEs</p>
-          <p className="text-2xl font-black text-black">245,392</p>
+        <div className="bg-black rounded-xl p-4">
+          <p className="text-xs text-gray-400 uppercase font-bold">Total CVEs</p>
+          <p className="text-2xl font-black text-white">{cves.length.toLocaleString()}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-500 uppercase font-bold">Critical (24h)</p>
-          <p className="text-2xl font-black text-black">12</p>
+        <div className="bg-black rounded-xl p-4">
+          <p className="text-xs text-gray-400 uppercase font-bold">Critical (24h)</p>
+          <p className="text-2xl font-black text-white">{criticalCves.length}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-500 uppercase font-bold">High (24h)</p>
-          <p className="text-2xl font-black text-gray-600">28</p>
+        <div className="bg-black rounded-xl p-4">
+          <p className="text-xs text-gray-400 uppercase font-bold">High (24h)</p>
+          <p className="text-2xl font-black text-gray-300">{cves.filter(c => c.severity === 'HIGH').length}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-500 uppercase font-bold">Active POCs</p>
-          <p className="text-2xl font-black text-gray-600">1,847</p>
+        <div className="bg-black rounded-xl p-4">
+          <p className="text-xs text-gray-400 uppercase font-bold">Active POCs</p>
+          <p className="text-2xl font-black text-gray-300">{cves.filter(c => c.exploitability !== 'None').length}</p>
         </div>
       </div>
 
@@ -54,8 +55,9 @@ export default function ThreatFeedPage() {
       </div>
 
       {/* CVE List */}
-      <div className="space-y-4">
-        {cves.map((cve) => (
+      <div className="space-y-4 mb-12">
+        <h3 className="text-lg font-bold text-black mb-4">Recent Vulnerability Disclosures</h3>
+        {criticalCves.map((cve) => (
           <div key={cve.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
@@ -78,7 +80,7 @@ export default function ThreatFeedPage() {
                     <span className="text-xs bg-gray-600 text-white px-2 py-0.5 rounded font-medium">PUBLIC POC</span>
                   )}
                 </div>
-                <h3 className="font-bold text-lg mb-1">{cve.description}</h3>
+                <h3 className="font-bold text-lg mb-1">{cve.title}</h3>
                 <p className="text-sm text-gray-500">{cve.software} | {cve.platform}</p>
               </div>
               <div className="text-right flex-shrink-0">
@@ -93,6 +95,25 @@ export default function ThreatFeedPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Threat Articles */}
+      <div className="space-y-4 mb-12">
+        <h3 className="text-lg font-bold text-black mb-4">Threat Intelligence Articles</h3>
+        <div className="grid gap-4">
+          {recentThreats.map((threat: any) => (
+            <div key={threat.id} className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs bg-black text-white px-2 py-0.5 rounded font-medium">{threat.category}</span>
+                <span className="text-xs text-gray-400">{threat.source}</span>
+                <span className="text-xs text-gray-400">•</span>
+                <span className="text-xs text-gray-400">{threat.date}</span>
+              </div>
+              <h4 className="font-bold text-black mb-1">{threat.title}</h4>
+              <p className="text-sm text-gray-500">{threat.summary}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Subscribe Section */}

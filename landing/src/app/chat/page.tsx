@@ -1,10 +1,10 @@
 'use client';
 
-import { chatMessages } from '@/data/mockData';
+import { chatConversations } from '@/data/mockData';
 import { useState } from 'react';
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState(chatMessages);
+  const [messages, setMessages] = useState(chatConversations[0].messages);
   const [input, setInput] = useState('');
 
   const handleSend = () => {
@@ -22,12 +22,11 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <header className="h-12 border-b border-gray-200 px-6 flex items-center justify-between bg-white">
         <div className="flex items-center gap-2">
-          <h2 className="text-xs font-bold uppercase tracking-wider">Log4j RCE Analysis</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider">Pentester Assistant</h2>
           <span className="text-[9px] bg-black text-white px-1.5 py-0.5 rounded font-bold uppercase">
-            Active
+            AI Active
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -41,9 +40,8 @@ export default function ChatPage() {
         </div>
       </header>
 
-      {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto px-8 py-8 space-y-10 bg-white">
-        {messages.map((msg) => (
+        {messages.map((msg: any) => (
           <div key={msg.id} className="max-w-3xl mx-auto flex gap-4">
             <div
               className={`size-8 rounded flex-shrink-0 flex items-center justify-center ${
@@ -74,7 +72,7 @@ export default function ChatPage() {
               {msg.code && (
                 <div className="bg-black rounded p-3 font-mono text-xs text-white">
                   <div className="flex justify-between items-center mb-2 text-[10px] text-gray-400 uppercase font-bold tracking-widest border-b border-gray-700 pb-1">
-                    <span>java</span>
+                    <span>code</span>
                     <span>copy</span>
                   </div>
                   <code>{msg.code}</code>
@@ -85,14 +83,13 @@ export default function ChatPage() {
         ))}
       </div>
 
-      {/* Input */}
       <footer className="p-6 pt-0 bg-white">
         <div className="max-w-3xl mx-auto">
           <div className="relative bg-white border border-gray-200 rounded overflow-hidden">
             <div className="p-3">
               <textarea
                 className="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-gray-400 resize-none text-black"
-                placeholder="Ask a follow-up..."
+                placeholder="Ask about CVEs, exploits, or security concepts..."
                 rows={2}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -120,35 +117,17 @@ export default function ChatPage() {
         </div>
       </footer>
 
-      {/* Right Sidebar */}
       <aside className="w-72 flex-shrink-0 border-l border-gray-200 bg-white hidden xl:block">
         <div className="p-4 border-b border-gray-200 font-bold text-[10px] uppercase tracking-widest text-gray-500">
-          Context Memory
+          Example Conversations
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          <section>
-            <h4 className="text-[10px] font-bold uppercase mb-3">Active Files</h4>
-            <div className="space-y-2">
-              <div className="p-2 rounded border border-gray-200 flex items-center gap-2">
-                <span className="text-black text-base">📄</span>
-                <div className="flex-1">
-                  <p className="text-[11px] font-semibold">Log4j_Analysis.pdf</p>
-                </div>
-              </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {chatConversations.map((conv) => (
+            <div key={conv.id} className="p-3 rounded border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+              <p className="text-xs font-bold text-black mb-1">{conv.title}</p>
+              <p className="text-[10px] text-gray-500">{conv.messages.length} messages</p>
             </div>
-          </section>
-          <section>
-            <h4 className="text-[10px] font-bold uppercase mb-3">Linked CVEs</h4>
-            <div className="space-y-2">
-              <div className="p-2 border border-gray-200 rounded">
-                <div className="flex justify-between items-center text-[9px] font-bold mb-1">
-                  <span className="text-black">CVE-2021-44228</span>
-                  <span className="text-white bg-black px-1">CRITICAL</span>
-                </div>
-                <p className="text-[9px] text-gray-500">Apache Log4j2 JNDI features...</p>
-              </div>
-            </div>
-          </section>
+          ))}
         </div>
       </aside>
     </div>
